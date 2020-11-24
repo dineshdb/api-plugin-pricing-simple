@@ -10,6 +10,22 @@ export default function getVariantPrice(context, catalogVariant, currencyCode) {
   if (!currencyCode) throw new Error("getVariantPrice received no currency code");
   if (!catalogVariant) throw new Error("getVariantPrice received no catalogVariant");
   if (!catalogVariant.pricing) throw new Error(`Catalog variant ${catalogVariant._id} has no pricing information saved`);
+  return catalogVariant.pricing[currencyCode] || computeVariantPrice(context, catalogVariant, currencyCode);
+}
 
-  return catalogVariant.pricing[currencyCode] || {};
+function computeVariantPrice(context, {currencyCode: catalogCurrencyCode, pricing}, currencyCode) {
+  // TODO Extract catalogCurrencyCode from catalogItem
+  let nativePricing = pricing[catalogCurrencyCode || "USD"];
+  if(!nativePricing) {
+    return {}
+  }
+
+  const getExchangedPrice = context.queries.getExchangedPrice;
+  let {minPrice, maxPrice, price} = nativePricing;
+  return {
+    minPrice: getExchangedPrice(minPrice, currencyCode),
+    maxPrice: getExchangedPrice(maxPrice, currencyCode),
+    price: getExchangedPrice(price, currencyCode),
+    currencyCode
+  }
 }
