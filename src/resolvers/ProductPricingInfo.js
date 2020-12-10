@@ -35,7 +35,7 @@ export default {
       price,
       currency: getCurrencyDefinitionByCode(targetCurrencyCode),
       displayPrice: displayPrice({minPrice, maxPrice, currencyCode: targetCurrencyCode}),
-      compareAtPrice: compareAtPrice({compareAtPrice: compPrice, targetCurrencyCode}),
+      compareAtPrice: compareAtPrice({compareAtPrice: compPrice, currencyCode: targetCurrencyCode}),
       currency: getCurrencyDefinitionByCode(targetCurrencyCode)
     }
   }
