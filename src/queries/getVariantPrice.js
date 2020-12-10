@@ -6,26 +6,45 @@
  * @param {String} currencyCode - The currency code in which to get price
  * @returns {Object} - A cart item price value.
  */
-export default function getVariantPrice(context, catalogVariant, currencyCode) {
+export default async function getVariantPrice(context, catalogVariant, currencyCode) {
   if (!currencyCode) throw new Error("getVariantPrice received no currency code");
   if (!catalogVariant) throw new Error("getVariantPrice received no catalogVariant");
   if (!catalogVariant.pricing) throw new Error(`Catalog variant ${catalogVariant._id} has no pricing information saved`);
   return catalogVariant.pricing[currencyCode] || computeVariantPrice(context, catalogVariant, currencyCode);
 }
 
-function computeVariantPrice(context, {currencyCode: catalogCurrencyCode, pricing}, currencyCode) {
-  // TODO Extract catalogCurrencyCode from catalogItem
-  let nativePricing = pricing[catalogCurrencyCode || "USD"];
+async function computeVariantPrice(context, {currencyCode: catalogCurrencyCode, pricing, shopId}, currencyCode) {
+  if(!catalogCurrencyCode) {
+    const shop = await context.queries.shopById(context, shopId);
+    catalogCurrencyCode = shop.currency;
+  }
+  let nativePricing = pricing[catalogCurrencyCode];
+  const forex = context.queries.getForexFor(currencyCode);
   if(!nativePricing) {
-    return {}
+    return {};
   }
 
+  let {minPrice, maxPrice, price, compareAtPrice} = nativePricing;
+  if(minPrice) {
+  	price = price? price: minPrice;
+  } else if(maxPrice) {
+  	price = price? price: maxPrice;
+  }
+  maxPrice = maxPrice? maxPrice: price;
+  minPrice = minPrice? minPrice: price;
+  
+  if(!forex) {
+    return {
+      minPrice, maxPrice, price, currencyCode: catalogCurrencyCode  
+    }
+  }
   const getExchangedPrice = context.queries.getExchangedPrice;
-  let {minPrice, maxPrice, price} = nativePricing;
   return {
+    compareAtPrice: compareAtPrice && getExchangedPrice(minPrice, currencyCode),
     minPrice: getExchangedPrice(minPrice, currencyCode),
     maxPrice: getExchangedPrice(maxPrice, currencyCode),
     price: getExchangedPrice(price, currencyCode),
     currencyCode
   }
 }
+

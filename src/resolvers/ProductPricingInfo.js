@@ -25,16 +25,18 @@ export default {
   compareAtPrice,
   displayPrice,
   currency: node => getCurrencyDefinitionByCode(node.currencyCode),
-  currencyExchangePricing: (productPrice, {currencyCode: targetCurrencyCode}, context, _currencyExchangePricing) => {
+  currencyExchangePricing: async (productPrice, {currencyCode: targetCurrencyCode}, context, _currencyExchangePricing) => {
     const {currencyCode} = productPrice;
-    const {minPrice, maxPrice, price} = context.queries.getVariantPrice(context, {currencyCode, pricing: {[currencyCode]: productPrice}}, targetCurrencyCode)
+    const {minPrice, maxPrice, price} = await context.queries.getVariantPrice(context, {currencyCode, pricing: {[currencyCode]: productPrice}}, targetCurrencyCode)
+    const compPrice = context.queries.getExchangedPrice(productPrice.compareAtPrice, targetCurrencyCode)
     return {
       minPrice,
       maxPrice,
       price,
       currency: getCurrencyDefinitionByCode(targetCurrencyCode),
       displayPrice: displayPrice({minPrice, maxPrice, currencyCode: targetCurrencyCode}),
-      compareAtPrice: compareAtPrice({compareAtPrice: productPrice.compareAtPrice, targetCurrencyCode}),
+      compareAtPrice: compareAtPrice({compareAtPrice: compPrice, targetCurrencyCode}),
+      currency: getCurrencyDefinitionByCode(targetCurrencyCode)
     }
   }
 };
