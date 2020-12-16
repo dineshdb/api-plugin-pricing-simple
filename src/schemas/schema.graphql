@@ -9,6 +9,10 @@ type ProductPricingInfo {
   "The code for the currency these pricing details applies to"
   currency: Currency!
 
+  "Provide a list of all exchange pricing"
+  allExchangePricing(anything: String): [CurrencyExchangeProductPricingInfo]
+  
+
   "Pricing converted to specified currency"
   currencyExchangePricing(
     "Code for the currency in which you want to see pricing info"
