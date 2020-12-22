@@ -1,4 +1,5 @@
 import getCurrencyDefinitionByCode from "@reactioncommerce/api-utils/getCurrencyDefinitionByCode.js";
+import formatMoney from "@reactioncommerce/api-utils/formatMoney.js";
 import getDisplayPrice from "../util/getDisplayPrice.js";
 
 function displayPrice(node) {
@@ -34,7 +35,7 @@ export default {
         minPrice,
         maxPrice,
         price,
-        displayPrice: displayPrice({minPrice, maxPrice, currencyCode: targetCurrencyCode}),
+        displayPrice: formatMoney(price, targetCurrencyCode),
         compareAtPrice: compareAtPrice({compareAtPrice: compPrice, currencyCode: targetCurrencyCode}),
         currency: getCurrencyDefinitionByCode(targetCurrencyCode)
       }
@@ -48,8 +49,7 @@ export default {
       minPrice,
       maxPrice,
       price,
-      currency: getCurrencyDefinitionByCode(targetCurrencyCode),
-      displayPrice: displayPrice({minPrice, maxPrice, currencyCode: targetCurrencyCode}),
+      displayPrice: formatMoney(price, targetCurrencyCode),
       compareAtPrice: compareAtPrice({compareAtPrice: compPrice, currencyCode: targetCurrencyCode}),
       currency: getCurrencyDefinitionByCode(targetCurrencyCode)
     }
